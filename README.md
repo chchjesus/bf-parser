@@ -1,4 +1,4 @@
-BrainF--k-interpreter
+bf-parser
 =====================
 
-Very simple brainf**k interpreter in C
+Very simple brainf--k parser in C
