@@ -9,18 +9,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define PROGRAM_SIZE_BYTES 30000
 
-int parse(unsigned char *buffer, char *src)
+int parse(unsigned char *buffer, const char *src)
 {
     unsigned char *ebp = buffer;
-    char *eip = src;
+    int srclen = strlen(src);
+    int eip = 0;
     int depth = 0;
 
-    while (*eip) {
-        /*printf("depth %d, eip %c, ebp: %d\n", depth, *eip, *ebp);*/
-        switch (*eip) {
+    while (src[eip]) {
+        /*printf("depth %d, eip %d, ebp: %d\n", depth, eip, *ebp);*/
+        switch (src[eip]) {
             case '>':
                 ++ebp;
                 break;
@@ -42,53 +44,49 @@ int parse(unsigned char *buffer, char *src)
             case '[':
                 if (!*ebp) {
                     depth = 1;
-                    while (depth != 0) {
+                    while ((eip < srclen) && (depth > 0)) {
                         ++eip;
-                        if (*eip == '[') { depth++; }
-                        else if (*eip == ']') { depth--; }
+                        if (src[eip] == '[') { depth++; }
+                        else if (src[eip] == ']') { depth--; }
                     }
                 }
                 break;
             case ']':
                 if (*ebp) {
                     depth = -1;
-                    while (depth != 0) {
+                    while (eip && (depth < 0)) {
                         --eip;
-                        if (*eip == ']') { depth--; }
-                        else if (*eip == '[') { depth++; }
+                        if (src[eip] == ']') { depth--; }
+                        else if (src[eip] == '[') { depth++; }
                     }
                 }
                 break;
         }
-        ++eip;
+        
+        if (depth < 0) {
+            printf("Error: Unclosed ]");
+            return EXIT_FAILURE;
+        }
+        else if (depth > 0) {
+            printf("Error: Unclosed [");
+            return EXIT_FAILURE;
+        }
+        else { ++eip; }
     }
-    
-    if (depth > 0) {
-        printf("Error: Unclosed [");
-        return EXIT_FAILURE;
-    }
-    else if (depth < 0) {
-        printf("Error: Unclosed ]");
-        return EXIT_FAILURE;
-    }
-    else {
-        return EXIT_SUCCESS;
-    }
+    return EXIT_SUCCESS;
 }
 
 int main(int argc, char *argv[])
 {
     unsigned char memory[PROGRAM_SIZE_BYTES] = {'\0'};
     char *bf_string = '\0';
-    int exit_code = 0;
 
     if ((argc == 2) && argv[1]) {
         bf_string = argv[1];
-        exit_code = parse(memory, bf_string);
     } 
     else {
-        return EXIT_FAILURE;
+        bf_string = "";
     }
 
-    return exit_code;
+    return parse(memory, bf_string);
 }
