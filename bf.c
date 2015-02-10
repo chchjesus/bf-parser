@@ -43,23 +43,29 @@ void destroy_stack(struct STACK *stack) {
 }
 
 int pop_stack(struct STACK *stack) {
-	printf("Pop stack\n");
-	if (stack->esp == stack->ebp)
+	//printf("Pop stack\n");
+	if (stack->esp == NULL) {
 		return STACK_EMPTY;
+	}
 	int item = *stack->esp;
 	*stack->esp = '\0';
-	--(stack->esp);
-	printf("Popped item: %d %c\n", item, item);
+	if (stack->esp == stack->ebp) {
+		stack->esp = NULL;		
+	} else {
+		--(stack->esp);
+	}
+	//printf("Popped item: %d %c\n", item, item);
 	return item;
 }
 
 int push_stack(struct STACK *stack, int item) {
-	printf("Push stack\n");
+	//printf("Push stack\n");
 	if ((size_t)(stack->esp - stack->ebp) >= stack->nmemb)
 		return STACK_FULL;
-	++(stack->esp);
+	if (stack->esp != NULL)
+		++(stack->esp);
 	*stack->esp = item;
-	printf("Pushed item: %d %c\n", item, item);
+	//printf("Pushed item: %d %c\n", item, item);
 	return EXIT_SUCCESS;
 }
 
@@ -73,12 +79,13 @@ void _fail_cleanly(struct STACK *_call_stack, struct STACK *_arg_stack, char *me
 int parse(struct STACK *_call_stack, struct STACK *_arg_stack, 
 		unsigned char *mem, char *src)
 {
+	printf("Entered parse\n");
 	int eip = pop_stack(_arg_stack);
 	int offset = pop_stack(_arg_stack);
 
 	while (src[eip]) {
-		printf("eip: %d *eip: %c\n", eip, src[eip]);
-		write(STDOUT_FILENO, mem, PROGRAM_SIZE_BYTES);
+		//printf("eip: %d *eip: %c\n", eip, src[eip]);
+		//write(STDOUT_FILENO, mem, PROGRAM_SIZE_BYTES);
 		switch (src[eip]) {
 		    case '>':
 			++offset;
@@ -110,10 +117,11 @@ int parse(struct STACK *_call_stack, struct STACK *_arg_stack,
 
 				parse(_call_stack, _arg_stack, mem, src);
 			} else { 
-				while (src[eip] && src[eip] != ']')
+				while (src[eip] && src[eip] != ']') 
 					++eip;
-				if (!src[eip])
+				if (!src[eip]) {
 					return -1;
+				}
 			}
 			break;
 		    case ']':
@@ -126,8 +134,9 @@ int parse(struct STACK *_call_stack, struct STACK *_arg_stack,
 			} else {
 				while (src[eip] && src[eip] != '[')
 					--eip;
-				if (!src[eip])
+				if (!src[eip]) {
 					return -1;	
+				}
 			}
 			break;
 		}
@@ -139,6 +148,7 @@ int parse(struct STACK *_call_stack, struct STACK *_arg_stack,
 			       	"Program terminated early. Unmatched enter loop brace ( [ )\n");
 	}
 
+	printf("exiting parse normally\n");
 	return EXIT_SUCCESS;
 }
 

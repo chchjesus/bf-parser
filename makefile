@@ -3,7 +3,7 @@
 # Date: 4/6/2013
 
 CC=gcc
-CFLAGS=-ansi -Wall -Wextra -Werror -pedantic -pedantic-errors
+CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic -pedantic-errors
 SOURCES=bf.c
 EXECUTABLE=bf
 
